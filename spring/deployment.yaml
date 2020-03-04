@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: springbootpruebaborja
-        image: borjaortizllamas/springbootpruebaborja:latest
+        image: borjaortizllamas/springbootcrudbaborja:1.0.0
         ports:
         - containerPort: 8080
           protocol: TCP

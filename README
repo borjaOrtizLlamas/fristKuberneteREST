@@ -1,0 +1,7 @@
+#API IN KUBERNETES
+---------
+
+- This proyect is based in https://github.com/borjaOrtizLlamas/docker-springboot-mongo docker containers. 
+- 1 replicaset with 2 pods with sprintboot
+- 1 replicaset with 1 pods with mongoDB
+- 1 springboot service  with nodePort

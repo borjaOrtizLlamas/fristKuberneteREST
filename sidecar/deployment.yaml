@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logs-sidecar
+spec:
+  selector:
+    matchLabels:
+      app: logs-sidecar
+  template:
+    metadata:
+      labels:
+        app: logs-sidecar
+        role: master
+        tier: backend
+    spec:
+      containers:
+      - name:  sidecar
+        image: borjaortizllamas/easysidecar:latest
+        volumeMounts:
+        - name: logs-volum-storage
+          mountPath: /var/log/
+      volumes: 
+      - name: logs-volum-storage
+        persistentVolumeClaim:
+          claimName: logs-volum

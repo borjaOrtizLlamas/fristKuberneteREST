@@ -4,43 +4,47 @@ metadata:
   name: springboot-service
   labels:
     app: springboot
-    role: master
-    tier: backend
 spec:
-  type: NodePort 
   ports:
   - port: 8080
     targetPort: 8080
+    name: http
   selector:
     app: springboot
-    role: master
-    tier: backend
 ---
-  apiVersion: apps/v1
-  kind: Deployment
-  metadata:
-    name: springboot-deployment
-  spec:
-    selector:
-      matchLabels:
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: springboot-service-acc
+  labels:
+    account: springboot-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot-deployment
+spec:
+  selector:
+    matchLabels:
+      app: springboot
+  replicas: 2
+  template:
+    metadata:
+      labels:
         app: springboot
-    replicas: 2
-    template:
-      metadata:
-        labels:
-          app: springboot
-          role: master
-          tier: backend
-      spec:
-        containers:
-        - name: springbootpruebaborja
-          image: borjaortizllamas/springbootcrudbaborja:1.0.0
-          ports:
-          - containerPort: 8080
-          volumeMounts:
-          - name: logs-volum-storage
-            mountPath: /var/log/
-        volumes: 
+        role: master
+        tier: backend
+    spec:
+      serviceAccountName: springboot-service-acc        
+      containers:
+      - name: springbootpruebaborja
+        image: borjaortizllamas/springbootcrudbaborja:1.0.2
+        ports:
+        - containerPort: 8080
+        volumeMounts:
         - name: logs-volum-storage
-          persistentVolumeClaim:
-            claimName: logs-volum
+          mountPath: /var/log/
+      volumes: 
+      - name: logs-volum-storage
+        persistentVolumeClaim:
+          claimName: logs-volum

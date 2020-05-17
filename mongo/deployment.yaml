@@ -4,16 +4,13 @@ metadata:
   name: mongo-service
   labels:
     app: mongo
-    role: master
-    tier: backend
 spec:
   ports:
   - port: 27017
     targetPort: 27017
+    name: tcp
   selector:
     app: mongo
-    role: master
-    tier: backend
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -28,8 +25,6 @@ spec:
     metadata:
       labels:
         app: mongo
-        role: master
-        tier: backend
     spec:
       containers:
       - name: mongopruebaborja

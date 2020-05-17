@@ -1,0 +1,177 @@
+#### aplicacion con  spring boot conectado a mongo, sidecar y  istiogateway
+####
+####
+########################################################################
+##### volume
+########################################################################
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: logs-volum
+  labels:
+    app: springboot
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+########################################################################
+##### bbdd mongo
+########################################################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-service
+  labels:
+    app: mongo
+spec:
+  ports:
+  - port: 27017
+    targetPort: 27017
+    name: tcp
+  selector:
+    app: mongo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-deployment
+spec:
+  selector:
+    matchLabels:
+      app: mongo
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mongo
+    spec:
+      containers:
+      - name: mongopruebaborja
+        image: borjaortizllamas/mongopruebaborja:latest
+        ports:
+        - containerPort: 27017
+
+---
+########################################################################
+##### springboot API REST
+########################################################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: springboot-service
+  labels:
+    app: springboot
+spec:
+  ports:
+  - port: 8080
+    targetPort: 8080
+    name: http
+  selector:
+    app: springboot
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: springboot-service-acc
+  labels:
+    account: springboot-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springboot-deployment
+spec:
+  selector:
+    matchLabels:
+      app: springboot
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: springboot
+        role: master
+        tier: backend
+    spec:
+      serviceAccountName: springboot-service-acc        
+      containers:
+      - name: springbootpruebaborja
+        image: borjaortizllamas/springbootcrudbaborja:1.0.2
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: logs-volum-storage
+          mountPath: /var/log/
+      volumes: 
+      - name: logs-volum-storage
+        persistentVolumeClaim:
+          claimName: logs-volum
+---
+########################################################################
+##### sidecar
+########################################################################
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logs-sidecar
+spec:
+  selector:
+    matchLabels:
+      app: logs-sidecar
+  template:
+    metadata:
+      labels:
+        app: logs-sidecar
+        role: master
+        tier: backend
+    spec:
+      containers:
+      - name:  sidecar
+        image: borjaortizllamas/easysidecar:latest
+        volumeMounts:
+        - name: logs-volum-storage
+          mountPath: /var/log/
+      volumes: 
+      - name: logs-volum-storage
+        persistentVolumeClaim:
+          claimName: logs-volum
+---
+########################################################################
+##### istio
+########################################################################
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: springboot-gateway
+spec:
+  selector:
+    istio: ingressgateway 
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: springboot-vs
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - springboot-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /client
+    route:
+    - destination:
+        host: springboot-service
+        port:
+          number: 8080
+          name: http

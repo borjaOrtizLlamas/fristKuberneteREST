@@ -2,6 +2,20 @@
 ---------
 
 - This proyect is based in https://github.com/borjaOrtizLlamas/docker-springboot-mongo docker containers. 
-- 1 replicaset with 2 pods with sprintboot
+- 1 replicaset with 2 pods with springboot
 - 1 replicaset with 1 pods with mongoDB
-- 1 springboot service  with nodePort
+- Sidecar for springboot logs   (roling update to springbootcrudbaborja:1.0.2)
+- Istio API gateway
+
+
+$ minikube config set vm-driver kvm2
+$ minikube start --memory=14384 --cpus=4 --kubernetes-version=v1.14.2
+$ istioctl manifest apply --set profile=demo
+$ kubectl label namespace default istio-injection=enabled
+$ export INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http")].nodePort}')
+$ export INGRESS_HOST=$(minikube ip)
+$ minikube tunnel --cleanup
+$ export GATEWAY_URL=$INGRESS_HOST:$INGRESS_PORT
+$ minikube dashboard
+$ istioctl dashboard kiali
+$ kubectl set image deployments/springboot-deployment springbootpruebaborja=borjaortizllamas/springbootcrudbaborja:1.0.2

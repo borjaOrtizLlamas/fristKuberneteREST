@@ -1,4 +1,4 @@
-#### aplicacion con  spring boot conectado a mongo, sidecar y  istiogateway
+#### aplicacion con  spring boot conectado a mongo, sidecar y  istio api gateway
 ####
 ####
 ########################################################################
@@ -98,7 +98,7 @@ spec:
       serviceAccountName: springboot-service-acc        
       containers:
       - name: springbootpruebaborja
-        image: borjaortizllamas/springbootcrudbaborja:1.0.2
+        image: borjaortizllamas/springbootcrudbaborja:1.0.0
         ports:
         - containerPort: 8080
         volumeMounts:

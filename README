@@ -7,6 +7,7 @@
 - Sidecar for springboot logs   (roling update to springbootcrudbaborja:1.0.2)
 - Istio API gateway
 
+Video (Spanish) depoying this aplication: https://www.youtube.com/watch?v=yUBMf5fkrno&t=0s
 
 $ minikube config set vm-driver kvm2
 $ minikube start --memory=14384 --cpus=4 --kubernetes-version=v1.14.2
